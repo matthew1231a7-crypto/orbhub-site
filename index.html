@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orb Hub — The #1 Free Roblox Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #2980ff;
+    --purple: #7c3aed;
+    --pink: #ec4899;
+    --teal: #06b6d4;
+    --dark: #07090f;
+    --card: #0d1017;
+    --border: rgba(255,255,255,0.06);
+    --text: #e2e8f0;
+    --muted: #3d5070;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--blue);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transition: transform 0.1s;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1.5px solid rgba(41,128,255,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99998;
+    transition: all 0.15s ease;
+  }
+
+  /* Animated canvas background */
+  #bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.35;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  /* Glow orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 500px; height: 500px; background: rgba(41,128,255,0.12); top: -100px; left: -100px; animation-delay: 0s; }
+  .orb-2 { width: 400px; height: 400px; background: rgba(124,58,237,0.10); bottom: 100px; right: -100px; animation-delay: 3s; }
+  .orb-3 { width: 300px; height: 300px; background: rgba(6,182,212,0.08); top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: 1.5s; }
+
+  @keyframes orbFloat {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  /* Content */
+  .content { position: relative; z-index: 2; }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(7,9,15,0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--blue); }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: #fff; }
+
+  .nav-cta {
+    background: var(--blue);
+    color: #fff !important;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-weight: 600 !important;
+    transition: opacity 0.2s !important;
+  }
+  .nav-cta:hover { opacity: 0.85; color: #fff !important; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(41,128,255,0.1);
+    border: 1px solid rgba(41,128,255,0.25);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--blue);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--blue);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero-title .grad {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 40%, var(--pink) 80%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    max-width: 560px;
+    color: var(--muted);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: #fff;
+    box-shadow: 0 0 30px rgba(41,128,255,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(41,128,255,0.45); }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+  .btn-discord {
+    background: rgba(88,101,242,0.15);
+    color: #7289da;
+    border: 1px solid rgba(88,101,242,0.3);
+  }
+  .btn-discord:hover { background: rgba(88,101,242,0.25); transform: translateY(-2px); }
+
+  /* Stats row */
+  .stats {
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    margin-top: 72px;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label { color: var(--muted); font-size: 0.82rem; font-weight: 500; margin-top: 2px; }
+
+  /* Gradient line */
+  .grad-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blue), var(--purple), var(--pink), transparent);
+    margin: 0 auto;
+    max-width: 600px;
+    opacity: 0.4;
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::before, .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    max-width: 40px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    max-width: 520px;
+    margin-bottom: 56px;
+  }
+
+  /* LOADSTRING BOX */
+  .loadstring-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-top: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .loadstring-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--purple), var(--pink));
+  }
+  .loadstring-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .loadstring-code {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: var(--teal);
+    word-break: break-all;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .copy-btn {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .copy-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(41,128,255,0.3); }
+  .copy-btn.copied { background: linear-gradient(135deg, #10b981, #059669); }
+
+  /* GAMES GRID */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .game-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+  .game-card:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(41,128,255,0.3);
+    transform: translateY(-2px);
+  }
+  .game-icon { font-size: 1.5rem; }
+  .game-name { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+  .game-status { font-size: 0.72rem; color: #10b981; margin-top: 2px; }
+
+  /* NEWS */
+  .news-grid {
+    display: grid;
+    gap: 14px;
+  }
+  .news-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: border-color 0.2s;
+  }
+  .news-card:hover { border-color: rgba(41,128,255,0.3); }
+  .news-date {
+    font-size: 0.72rem;
+    color: var(--blue);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+  .news-text { font-size: 0.9rem; color: var(--text); line-height: 1.5; }
+
+  /* TEAM */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .team-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 22px;
+    text-align: center;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .team-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--purple));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .team-card:hover::before { opacity: 1; }
+  .team-card:hover { transform: translateY(-4px); border-color: rgba(41,128,255,0.3); }
+  .team-avatar {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+  }
+  .team-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; }
+  .team-role { font-size: 0.78rem; color: var(--blue); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .team-desc { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+
+  /* DISCORD CTA */
+  .discord-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto;
+    max-width: 700px;
+  }
+  .discord-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(41,128,255,0.1) 0%, transparent 70%);
+  }
+  .discord-section::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue), var(--purple), transparent);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 36px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.82rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--dark); }
+  ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 4px; }
+
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .nav-links { display: none; }
+    .stats { gap: 28px; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- Animated particle canvas -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Glow orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="content">
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">⚡ <span>Orb</span>Hub</a>
+  <ul class="nav-links">
+    <li><a href="#scripts">Scripts</a></li>
+    <li><a href="#news">News</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="https://discord.gg/AG9bjcurht" target="_blank" class="nav-cta">Join Discord</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🔥 v6.0 just dropped — 295+ scripts</div>
+  <h1 class="hero-title">
+    The #1 Free<br><span class="grad">Roblox Hub</span>
+  </h1>
+  <p class="hero-sub">
+    Orb Hub gives you access to 295+ game scripts completely free. Auto play, ESP, teleport and more — all in one place.
+  </p>
+  <div class="hero-buttons">
+    <button class="btn btn-primary" onclick="copyLoadstring()">⚡ Copy Loadstring</button>
+    <a href="https://discord.gg/AG9bjcurht" target="_blank" class="btn btn-discord">💬 Join Discord</a>
+    <a href="#scripts" class="btn btn-secondary">View Scripts →</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">295+</div>
+      <div class="stat-label">Game Scripts</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Free Forever</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">1.6k+</div>
+      <div class="stat-label">Discord Members</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">v6</div>
+      <div class="stat-label">Latest Version</div>
+    </div>
+  </div>
+</div>
+
+<div class="grad-line" style="margin-bottom:0"></div>
+
+<!-- LOADSTRING SECTION -->
+<section id="get">
+  <div class="section-label">Get Started</div>
+  <h2 class="section-title reveal">One line.<br>Every script.</h2>
+  <p class="section-sub reveal">Paste the loadstring into any executor, enter your key and you're in. Get your key by joining our Discord.</p>
+
+  <div class="loadstring-box reveal">
+    <div class="loadstring-label">🔑 Key: <strong style="color:#2980ff">orbhub</strong> &nbsp;|&nbsp; Works on: Xeno, Delta, KRNL, Fluxus, Arceus X</div>
+    <div class="loadstring-code" id="ls-code">loadstring(game:HttpGet("https://raw.githubusercontent.com/matthew1231a7-crypto/orbhub-master5/refs/heads/main/OrbHub_Master5.lua"))()</div>
+    <button class="copy-btn" onclick="copyLoadstring()" id="copy-btn">
+      📋 Copy Loadstring
+    </button>
+  </div>
+</section>
+
+<!-- SCRIPTS -->
+<section id="scripts">
+  <div class="section-label">Game Scripts</div>
+  <h2 class="section-title reveal">295+ Games Supported</h2>
+  <p class="section-sub reveal">Every script has its own features. Our Orb Hub originals are the best — built by Tox, tested by TTV & Satoru.</p>
+
+  <div class="games-grid reveal">
+    <div class="game-card" style="--accent:#2980ff"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#2980ff;border-radius:3px 0 0 3px"></div><div class="game-icon">⚔️</div><div><div class="game-name">Blade Ball</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#34d399;border-radius:3px 0 0 3px"></div><div class="game-icon">🌀</div><div><div class="game-name">Swing Obby</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59332;border-radius:3px 0 0 3px"></div><div class="game-icon">🚗</div><div><div class="game-name">Driving Empire</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#ef4444;border-radius:3px 0 0 3px"></div><div class="game-icon">🥊</div><div><div class="game-name">Rivals</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#a855f7;border-radius:3px 0 0 3px"></div><div class="game-icon">👊</div><div><div class="game-name">Knockout</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#06b6d4;border-radius:3px 0 0 3px"></div><div class="game-icon">✈️</div><div><div class="game-name">Fly Brainrots</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#22c55e;border-radius:3px 0 0 3px"></div><div class="game-icon">✂️</div><div><div class="game-name">Cut Grass</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#ec4899;border-radius:3px 0 0 3px"></div><div class="game-icon">🧠</div><div><div class="game-name">Steal Brainrot</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#ef4444;border-radius:3px 0 0 3px"></div><div class="game-icon">🔫</div><div><div class="game-name">Bloxstrike</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#8b5cf6;border-radius:3px 0 0 3px"></div><div class="game-icon">🗡️</div><div><div class="game-name">Sword Factory</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#ef4444;border-radius:3px 0 0 3px"></div><div class="game-icon">🍎</div><div><div class="game-name">Blox Fruits</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59332;border-radius:3px 0 0 3px"></div><div class="game-icon">🐾</div><div><div class="game-name">Pet Simulator X</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#6366f1;border-radius:3px 0 0 3px"></div><div class="game-icon">🎯</div><div><div class="game-name">Phantom Forces</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#2d3748;border-radius:3px 0 0 3px"></div><div class="game-icon">🚪</div><div><div class="game-name">Doors</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#34d399;border-radius:3px 0 0 3px"></div><div class="game-icon">🏘️</div><div><div class="game-name">Brookhaven</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#ec4899;border-radius:3px 0 0 3px"></div><div class="game-icon">🐶</div><div><div class="game-name">Adopt Me</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card"><div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#ef4444;border-radius:3px 0 0 3px"></div><div class="game-icon">🔪</div><div><div class="game-name">Murder Mystery 2</div><div class="game-status">✅ Working</div></div></div>
+    <div class="game-card" style="border-style:dashed;opacity:0.5"><div class="game-icon">➕</div><div><div class="game-name">295+ More</div><div class="game-status">In hub</div></div></div>
+  </div>
+</section>
+
+<!-- NEWS -->
+<section id="news">
+  <div class="section-label">Updates</div>
+  <h2 class="section-title reveal">Latest News</h2>
+  <p class="section-sub reveal">Stay up to date with every script update and new release.</p>
+
+  <div class="news-grid reveal">
+    <div class="news-card">
+      <div class="news-date">Today</div>
+      <div class="news-text">🆕 <strong>v6.0 released!</strong> — Favorites system, auto game detection, news ticker and better search all added to the hub</div>
+    </div>
+    <div class="news-card">
+      <div class="news-date">Recent</div>
+      <div class="news-text">✅ <strong>Steal a Brainrot</strong> — Complete rewrite with Auto Play, Float, Anti Ragdoll, Keybinds, Config save and mobile edition</div>
+    </div>
+    <div class="news-card">
+      <div class="news-date">Recent</div>
+      <div class="news-text">✅ <strong>4 new scripts</strong> — Brookhaven, Doors, Adopt Me and Murder Mystery 2 added with full feature sets</div>
+    </div>
+    <div class="news-card">
+      <div class="news-date">Recent</div>
+      <div class="news-text">⚡ <strong>Discord logger</strong> — Hub now logs all users so the admin team can monitor usage and detect issues</div>
+    </div>
+    <div class="news-card">
+      <div class="news-date">Recent</div>
+      <div class="news-text">💎 <strong>Premium Hub</strong> — Premium tier released with 434 games, gold theme and exclusive access. Key: premiumscriptfr</div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCORD CTA -->
+<section style="padding: 40px 24px 80px">
+  <div class="discord-section reveal">
+    <div style="font-size:3rem;margin-bottom:16px">💬</div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:12px">Join Our Discord</h2>
+    <p style="color:var(--muted);max-width:400px;margin:0 auto 28px;line-height:1.7">Get your free key, receive script updates, apply for staff and connect with 1,600+ other members.</p>
+    <a href="https://discord.gg/AG9bjcurht" target="_blank" class="btn btn-primary" style="margin:0 auto">
+      💬 discord.gg/AG9bjcurht
+    </a>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="section-label">The Team</div>
+  <h2 class="section-title reveal">Made by the best</h2>
+  <p class="section-sub reveal">A small team that builds and maintains every single script in the hub.</p>
+
+  <div class="team-grid reveal">
+    <div class="team-card">
+      <div class="team-avatar">👑</div>
+      <div class="team-name">Tox</div>
+      <div class="team-role">Founder & Developer</div>
+      <div class="team-desc">Created Orb Hub from scratch. Writes every script and manages the entire project.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar" style="background:linear-gradient(135deg,#06b6d4,#3b82f6)">🧪</div>
+      <div class="team-name">TTV</div>
+      <div class="team-role">Script Tester</div>
+      <div class="team-desc">Tests every script before it goes live to make sure nothing breaks.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar" style="background:linear-gradient(135deg,#8b5cf6,#ec4899)">🧪</div>
+      <div class="team-name">Satoru</div>
+      <div class="team-role">Script Tester</div>
+      <div class="team-desc">Quality checks all new releases and reports bugs back to the dev team.</div>
+    </div>
+    <div class="team-card" style="border-style:dashed;opacity:0.5">
+      <div class="team-avatar" style="background:rgba(255,255,255,0.05)">❓</div>
+      <div class="team-name">You?</div>
+      <div class="team-role">Open Positions</div>
+      <div class="team-desc">We're recruiting staff! Join Discord and apply in the applications channel.</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- end content -->
+
+<!-- FOOTER -->
+<footer>
+  <div style="font-family:'Syne',sans-serif;font-weight:700;color:#fff">⚡ Orb Hub</div>
+  <div>Made by Tox • Testers: TTV & Satoru • Not affiliated with Roblox</div>
+  <a href="https://discord.gg/AG9bjcurht" target="_blank" style="color:var(--blue);text-decoration:none;font-weight:600">discord.gg/AG9bjcurht</a>
+</footer>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx - 6 + 'px'; cursor.style.top = my - 6 + 'px'; });
+function animRing() { rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12; ring.style.left = rx - 18 + 'px'; ring.style.top = ry - 18 + 'px'; requestAnimationFrame(animRing); }
+animRing();
+document.querySelectorAll('a,button,.btn').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(2)'; ring.style.transform = 'scale(1.4)'; ring.style.borderColor = 'rgba(41,128,255,0.8)'; });
+  el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; ring.style.transform = 'scale(1)'; ring.style.borderColor = 'rgba(41,128,255,0.4)'; });
+});
+
+// Particle canvas
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * W; this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.5) * 0.4;
+    this.r = Math.random() * 1.5 + 0.5;
+    this.colors = ['#2980ff','#7c3aed','#ec4899','#06b6d4'];
+    this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
+    this.alpha = Math.random() * 0.6 + 0.2;
+    this.life = 0; this.maxLife = Math.random() * 300 + 200;
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy; this.life++;
+    if (this.x < 0 || this.x > W || this.y < 0 || this.y > H || this.life > this.maxLife) this.reset();
+  }
+  draw() {
+    ctx.save(); ctx.globalAlpha = this.alpha * (1 - this.life/this.maxLife);
+    ctx.fillStyle = this.color; ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+// Draw connecting lines between nearby particles
+function drawLines() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i+1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 120) {
+        ctx.save();
+        ctx.globalAlpha = (1 - dist/120) * 0.08;
+        ctx.strokeStyle = '#2980ff';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  drawLines();
+  requestAnimationFrame(animate);
+}
+animate();
+
+// Copy loadstring
+function copyLoadstring() {
+  const code = document.getElementById('ls-code').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✅ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copy Loadstring'; btn.classList.remove('copied'); }, 2500);
+  });
+}
+
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
